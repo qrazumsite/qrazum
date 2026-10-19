@@ -244,7 +244,7 @@ input,textarea{font-family:inherit;border:none;outline:none;background:var(--car
         <div class="frow"><label>ID или номер телефона</label><input id="inLogin" placeholder="ID или номер"></div>
         <div class="frow"><label>Пароль</label><input id="inPass" type="password" placeholder="Ваш пароль"></div>
         <button class="btn" onclick="A.authEnter()">Войти</button>
-        <div class="frow" style="margin-top:12px"><button class="btn sec" onclick="A.showReg()">Создать аккаунт</button></div>
+        <div class="frow" style="margin-top:12px"><button class="btn sec" onclick="A.showReg()">Создать аккаунт</button></div><div class="frow" style="margin-top:10px"><button class="btn sec" onclick="A.loginQr()">Войти по QR</button></div>
       </div>
       <div id="authReg" class="hide">
         <div class="frow"><label>Имя и фамилия</label><input id="regName" placeholder="Как к вам обращаться"></div>
@@ -397,7 +397,7 @@ A.doReg=function(){
  var first=true;for(var k in S.users){first=false;break}
  var nid=S.seq||1;S.seq=nid+1;
  var colors=['#C7F53F','#FF9F0A','#0A84FF','#FF375F','#64D2FF','#BF5AF2','#FFD60A'];
- S.users[nid]={id:nid,name:name,tag:'user'+nid,role:first?'owner':'member',committee:'',banned:false,quants:first?592:120,color:colors[nid%colors.length],avatar:'',cover:'',packs:[],status:null,phone:ph,pass:hash(pw)};
+ S.users[nid]={id:nid,name:name,tag:'user'+nid,role:first?'owner':'member',committee:'',banned:false,quants:first?100000:120,color:colors[nid%colors.length],avatar:'',cover:'',packs:[],status:null,phone:ph,pass:hash(pw)};
  if(first){S.notifs=[];S.requests=[]}
  if(!S.chats.some(function(c){return c.id==='gen'}))S.chats.unshift({id:'gen',title:'Q-РАЗУМ · Общий',kind:'group',msgs:[]});
  S.me=nid;
@@ -711,10 +711,10 @@ function renderProfile(){
  var u=me();
  var h='<div class="hdr"><div class="row"><div class="lg">Профиль</div><div><button class="ic" onclick="A.admin()">'+(isStaff()?ic('gear'):'')+'</button></div></div></div>';
  h+='<div class="cover" style="'+(u.cover?'background:'+u.cover:'')+'"></div><div style="position:relative;margin-bottom:34px"><div class="pava">'+(u.avatar?'<img src="'+u.avatar+'">':initials(u.name))+'</div></div>';
- h+='<div class="pnm">'+esc(u.name)+(S.my.specials.indexOf('gold')>=0?' <span style="color:#FFD60A">★</span>':'')+'</div>';
+ h+='<div class="pnm">'+esc(u.name)+(S.my.specials.indexOf('gold')>=0?' <span style="color:#FFD60A">★</span>':'')+(u.emoji?' <span class="emjbadge">'+u.emoji+'</span>':'')+'</div>';
  h+='<div class="ptag">@'+esc(u.tag)+' · '+(u.role==='owner'?'владелец':u.role==='chair'?'председатель · '+esc(u.committee):'участник')+'</div>';
  h+='<div class="qchips"><div class="qchip"><span>Кванты</span>'+(S.my.specials.indexOf('premium')>=0?'💠 ':'')+u.quants+'</div><div class="qchip"><span>Уровень</span>'+Math.max(1,Math.floor(u.quants/100))+'</div><div class="qchip"><span>Комитет</span>'+(u.committee||'—')+'</div></div>';
- h+='<div class="actsrow"><button onclick="A.setAvatar()">'+ic('cam')+' Фото</button><button onclick="A.editName()">'+ic('edit')+' Изменить</button><button onclick="A.myStatus()">'+ic('smile')+' Статус</button><button onclick="A.moreSheet()">'+ic('gear')+' Ещё</button></div>';
+ h+='<div class="actsrow"><button onclick="A.setAvatar()">'+ic('cam')+' Фото</button><button onclick="A.editName()">'+ic('edit')+' Изменить</button><button onclick="A.myStatus()">'+ic('smile')+' Статус</button><button onclick="A.emojiStatus()">Эмодзи</button><button onclick="A.moreSheet()">'+ic('gear')+' Ещё</button></div>';
  var rows=[['Имя пользователя',u.tag,'A.editName()'],['Мобильный',u.phone||'—','A.editField(\'phone\')'],['Комитет',u.committee||'—',''],['Город','Ульяновск','A.editField(\'city\')'],['О себе','Думаю громко. Действую','A.editField(\'bio\')']];
  rows.forEach(function(r){h+='<div class="inforow" onclick="'+r[2]+'"><div class="v">'+esc(r[1])+'</div><div class="k">'+r[0]+'</div></div>'});
  h+='<div class="listrow">'+ic('star')+'Достижения<span class="chev">›</span></div>';
@@ -732,7 +732,7 @@ A.editField=function(f){
  sheet('<h3>'+labs[f]+'</h3><div class="frow"><input id="fldTx" value="'+esc(vals[f]||'')+'"></div><button class="btn" onclick="A.saveField(\''+f+'\')">Сохранить</button>');
 };
 A.saveField=function(f){var v=$('fldTx').value.trim();if(f==='phone')me().phone=v;save();closeSheet();renderProfile()};
-A.moreSheet=function(){sheet('<h3>Ещё</h3><button class="btn sec" style="margin-bottom:8px" onclick="A.share()">Поделиться сайтом (QR)</button><button class="btn sec" style="margin-bottom:8px" onclick="A.admin()">Админ-панель</button><button class="btn sec" style="margin-bottom:8px" onclick="toast(\'Сброс данных\');A.resetDemo()">Сбросить данные</button><button class="btn red" onclick="A.logout()">Выйти</button>')};
+A.moreSheet=function(){sheet('<h3>Ещё</h3><button class="btn sec" style="margin-bottom:8px" onclick="A.share()">Поделиться сайтом (QR)</button><button class="btn sec" style="margin-bottom:8px" onclick="A.approveQr()">Войти на другом устройстве (код)</button><button class="btn sec" style="margin-bottom:8px" onclick="A.admin()">Админ-панель</button><button class="btn sec" style="margin-bottom:8px" onclick="toast(\'Сброс данных\');A.resetDemo()">Сбросить данные</button><button class="btn red" onclick="A.logout()">Выйти</button>')};
 A.resetDemo=function(){try{localStorage.removeItem('qrz_session');localStorage.removeItem('qrazym_v2');localStorage.removeItem('qrazym_ios')}catch(e){}try{if(CLOUD)FB.ref('qrz').remove()}catch(e){}S=defState();save();location.reload()};
 A.logout=function(){try{localStorage.removeItem('qrz_session')}catch(e){};save();location.reload()};
 A.share=function(){var url=location.href.split('?')[0];var img='<img src=\"https://api.qrserver.com/v1/create-qr-code/?size=220x220&data='+encodeURIComponent(url)+'\" style=\"width:220px;height:220px;border-radius:12px;background:#fff;padding:8px\">';sheet('<h3>Пригласите участников</h3><div style="text-align:center">'+img+'<p style="color:var(--sub);font-size:13px;word-break:break-all">'+esc(url)+'</p><button class="btn sec" onclick="closeSheet()">Готово</button></div>')};
@@ -826,6 +826,124 @@ A.fwdTo=function(cid){
  tgt.unread=(tgt.unread||0)+0;
  CV.fwd=null;save();closeSheet();
  if(cid===src.id)renderChat();else{toast('Переслано в «'+tgt.title+'»');renderChats()}
+};
+</script>
+</body>
+
+<script>
+/* ============ PATCH v1.2: QR-вход + эмодзи-статусы + 100000 владельцу ============ */
+(function(){
+ var st=document.createElement('style');
+ st.textContent='.emjbadge{display:inline-flex;align-items:center;margin-left:6px;font-size:14px;padding:1px 8px;border-radius:12px;background:linear-gradient(135deg,rgba(255,214,10,.22),rgba(255,159,10,.22));border:1px solid rgba(255,214,10,.55);animation:emjglow 1.6s ease-in-out infinite}@keyframes emjglow{0%,100%{box-shadow:0 0 4px 1px rgba(255,214,10,.45)}50%{box-shadow:0 0 12px 3px rgba(255,214,10,.85)}}.echips{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:10px 0}.echips button{font-size:22px;padding:8px 0;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid transparent}.echips button.on{border-color:#FFD60A;background:rgba(255,214,10,.15)}.qrcodewrap{text-align:center}.qrnum{font-size:24px;font-weight:800;letter-spacing:4px;margin:8px 0}';
+ document.head.appendChild(st);
+})();
+var EMOJI_LIST=['👑','🔥','⭐','💜','💙','🌙','☕','🎮','🎧','📚','✨','🦋','🐈','🌸','🍀','⚡','💎','🚀','🎯','🎨','🍩','🏆','😎','🥰','🤖','🦊','🌈','💬'];
+A.emojiStatus=function(){
+ var u=me();
+ var h='<h3>Эмодзи-статус</h3><p style="color:var(--sub);font-size:13px;margin-bottom:8px">Выберите эмодзи — он появится рядом с вашим именем со свечением, как в Telegram Premium.</p>';
+ h+='<div class="echips">'+EMOJI_LIST.map(function(e){return '<button class="'+(u.emoji===e?'on':'')+'" onclick="A.setEmoji(\''+e+'\')">'+e+'</button>'}).join('')+'</div>';
+ if(u.emoji)h+='<button class="btn sec" style="margin-top:8px" onclick="A.setEmoji(\'\')">Убрать статус</button>';
+ sheet(h);
+};
+A.setEmoji=function(e){me().emoji=e;save();closeSheet();renderProfile();toast(e?'Эмодзи-статус установлен':'Статус убран')};
+
+/* ---- QR-вход ---- */
+var QR_PENDING=null;
+var pendingQrCode=null;
+(function(){
+ var m=location.search.match(/[?&]qr=([A-Za-z0-9]{8})/);
+ if(m)pendingQrCode=m[1].toUpperCase();
+ try{
+  var sc=sessionStorage.getItem('qrz_pending_qr');
+  if(sc)pendingQrCode=sc.toUpperCase();
+ }catch(e){}
+})();
+function showQrConfirm(code){
+ var u=me();
+ sheet('<h3>Вход на другом устройстве</h3><div style="text-align:center"><p>Подтвердить вход в аккаунт</p><div style="font-weight:800;font-size:17px;margin:6px 0">'+esc(u.name)+'</div><button class="btn" style="margin-bottom:8px" onclick="A.confirmQrCode(\''+code+'\')">Подтвердить вход</button><button class="btn sec" onclick="closeSheet()">Отмена</button></div>');
+}
+A.confirmQrCode=function(code){
+ if(!CLOUD){toast('Облако недоступно');return}
+ var r=FB.ref('qrlogin/'+code);
+ r.once('value',function(snap){
+  var v=snap.val();
+  if(!v||!v.t){toast('Код не найден или истёк');return}
+  r.set({t:v.t,uid:S.me,ts:Date.now()});
+  closeSheet();
+  toast('Вход подтверждён');
+ },function(){toast('Не удалось связаться с облаком')});
+};
+A.approveQr=function(){
+ if(!S.me){toast('Сначала войдите в свой аккаунт');return}
+ var c=prompt('Введите 8-значный код с экрана компьютера');
+ if(!c)return;
+ c=c.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+ if(c.length!==8){toast('Код должен быть из 8 символов');return}
+ A.confirmQrCode(c);
+};
+A.loginQr=function(){
+ if(!CLOUD){toast('Облако недоступно — проверьте интернет');return}
+ var chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+ var code='';
+ for(var i=0;i<8;i++)code+=chars[Math.floor(Math.random()*chars.length)];
+ var site=location.href.split('?')[0];
+ var url=site+'?qr='+code;
+ var img='<img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data='+encodeURIComponent(url)+'" style="width:200px;height:200px;border-radius:12px;background:#fff;padding:8px" alt="QR">';
+ var r=FB.ref('qrlogin/'+code);
+ r.set({t:Date.now()});
+ var done=false;
+ var finish=function(uid){
+  if(done)return;done=true;
+  try{r.off('value');r.remove()}catch(e){}
+  if(QR_PENDING)clearTimeout(QR_PENDING.timer);
+  QR_PENDING=null;
+  S.me=uid;
+  try{localStorage.setItem('qrz_session',String(uid))}catch(e){}
+  closeSheet();
+  enterApp();
+  toast('Вход подтверждён');
+ };
+ r.on('value',function(snap){
+  var v=snap.val();
+  if(v&&v.uid)finish(v.uid);
+ });
+ var timer=setTimeout(function(){
+  if(done)return;done=true;
+  try{r.off('value');r.remove()}catch(e){}
+  QR_PENDING=null;
+  closeSheet();
+  toast('Время ожидания истекло — попробуйте ещё раз');
+ },5*60*1000);
+ QR_PENDING={r:r,timer:timer};
+ var h='<h3>Вход по QR-коду</h3><div class="qrcodewrap">'+img+
+ '<p style="color:var(--sub);font-size:13px;margin:10px 0 4px">Отсканируйте камерой телефона или введите код вручную:</p>'+
+ '<div class="qrnum">'+code+'</div>'+
+ '<p style="color:var(--sub);font-size:12px;margin-bottom:10px">Ждём подтверждения до 5 минут</p>'+
+ '<button class="btn red" onclick="A.cancelQr()">Отмена</button></div>';
+ sheet(h);
+};
+A.cancelQr=function(){
+ if(QR_PENDING){try{QR_PENDING.r.off('value');QR_PENDING.r.remove();clearTimeout(QR_PENDING.timer)}catch(e){}QR_PENDING=null}
+ closeSheet();
+};
+/* авто-подтверждение: если открыли ссылку с ?qr=КОД и уже вошли */
+if(pendingQrCode&&S.me&&S.users[S.me]){
+ showQrConfirm(pendingQrCode);
+ try{sessionStorage.removeItem('qrz_pending_qr')}catch(e){}
+}
+/* если только залогинились, а код был — предложить подтвердить */
+var _oldEnter=enterApp;
+enterApp=function(){
+ _oldEnter();
+ if(pendingQrCode&&S.me&&S.users[S.me]){
+  var c=pendingQrCode;pendingQrCode=null;
+  showQrConfirm(c);
+ }
+ if(!pendingQrCode){
+  try{sessionStorage.removeItem('qrz_pending_qr')}catch(e){}
+ }else{
+  try{sessionStorage.setItem('qrz_pending_qr',pendingQrCode)}catch(e){}
+ }
 };
 </script>
 </body>
